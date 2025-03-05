@@ -1,0 +1,408 @@
+<!DOCTYPE html> 
+<html lang="it">
+   <head> <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+   <title>Text Editor Semplice</title> <style> 
+   body { font-family: Arial, sans-serif; margin: 20px; }
+   table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+   th, td { border: 1px solid #ccc; padding: 10px; text-align: left; } 
+   th { font-weight: bold; }
+   
+   
+   .input-container {
+            margin: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .input-container p {
+            margin: 10px 0;
+        }
+        .input-container button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .input-container button:hover {
+            background-color: #45a049;
+        }
+   
+   </style> </head>
+   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+     
+   </script> <body> <h1>Gioco dell'impiccato</h1>
+   <div id="body1">
+   <p id="output"></p> 
+   <textarea id="latex" style="width: 100%; height: 50px; font-size: 16px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; resize: none;" 
+   placeholder="Scrivi qui il tuo testo..." oninput="updateOutput()"></textarea>
+   <table id="data-table"> <thead> <tr> <th>Latex</th>
+   <th>Output</th> <th>Lunghezza</th> <th>Massa</th>
+   <th>Tempo</th> <th>Corrente</th> <th>Mole</th> 
+   <th>Temperatura</th> <th>Luminosità</th>
+   <th>Unità di misura</th> <th>Azioni</th> </tr> </thead> <tbody>
+      <tr><td> 
+      <textarea style="width: 100%; height: 20px;" oninput="updateRowOutput(this,2)"></textarea> </td>
+      <td> <p></p> </td> 
+      <td><input type="number" oninput="updateUnitMeasurement(this)" /></td>
+      <td><input type="number" oninput="updateUnitMeasurement(this)" /></td>
+      <td><input type="number" oninput="updateUnitMeasurement(this)" /></td>
+      <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> 
+      <td><input type="number" oninput="updateUnitMeasurement(this)" /></td>
+      <td><input type="number" oninput="updateUnitMeasurement(this)" /></td>
+      <td><input type="number" oninput="updateUnitMeasurement(this)" /></td>
+      <td><p></p></td> <td><button onclick="removeRow(this)">Rimuovi</button></td> </tr>
+      </tbody> </table>
+      <button onclick="addRow()">Aggiungi Riga</button>
+          <button onclick="createGame()">chiama il tuo amico fisico</button></div>
+             <div id="body2" style="display: none;">
+               
+               <p id="problem">ciao</p> <p id="numerodivariabili">ciao2</p>
+       
+       <div class="input-container">
+    <p id="name"></p>
+    <p id="uof"></p>
+    <input type="text" id="var"  oninput="updateValue(this)" placeholder="nome variabile" required  autocomplete="off">
+    <br><br>
+    <input type="number" oninput="updateValue(this)" placeholder="lunghezza" id="lunghezza" required>
+    <input type="number" oninput="updateValue(this)" placeholder="massa" id="massa" required>
+    <input type="number" oninput="updateValue(this)" placeholder="tempo" id="tempo" required>
+    <input type="number" oninput="updateValue(this)" placeholder="corrente" id="corrente" required>
+    <input type="number" oninput="updateValue(this)" placeholder="mole" id="mole" required>
+    <input type="number" oninput="updateValue(this)" placeholder="temperatura" id="temperatura" required>
+    <input type="number" oninput="updateValue(this)" placeholder="luminosità" id="luminosita" required>
+    <br><br>
+    <button id="addButton" onclick="addRow2()">Add</button>
+</div>
+  <p id="err">Numeri errori: 0</p>     
+       
+       
+        <table id="data-table2">
+          <thead><tr> <th>Nome</th> <th>Unità di misura</th> <th style="display: none;">Modifica</th></tr></thead>
+         <tbody> <tr> 
+        
+        
+         </tr></tbody> 
+        </table>      
+              <button id="edit" onclick="edit()">Edit</button>
+             <p id="formula" style="display: none;"></p>
+             </div>
+
+      <script>
+        let errors=0;
+        let finalvar=[];
+   function addRow2(){
+            const lunghezza = document.getElementById("lunghezza").value;
+            const massa = document.getElementById("massa").value;
+            const tempo = document.getElementById("tempo").value;
+            const corrente = document.getElementById("corrente").value;
+            const mole = document.getElementById("mole").value;
+            const temperatura = document.getElementById("temperatura").value;
+            const luminosita = document.getElementById("luminosita").value;  
+          
+           const tableBody = document.getElementById('data-table2').getElementsByTagName('tbody')[0]; 
+          const newRow = tableBody.insertRow();
+         const name=document.getElementById("name").innerHTML;
+          const uof=document.getElementById("uof").innerHTML;
+                    const latexstr=document.getElementById("var").value;
+const err=document.getElementById("err");
+
+          
+      let indexfind=-1;
+          for(let i=0;i<finalvar.length;i++){
+
+    
+            if(finalvar[i].found==false&&
+            lunghezza==finalvar[i].units.lunghezza&&
+            massa==finalvar[i].units.massa&&
+            tempo==finalvar[i].units.tempo&&
+            corrente==finalvar[i].units.corrente&&
+            mole==finalvar[i].units.mole&&
+            temperatura==finalvar[i].units.temperatura&&
+            luminosita==finalvar[i].units.luminosita){
+              indexfind=finalvar[i].index;
+              break;
+            }
+            
+            
+          }
+          
+          let counter=0;
+         for(let i=0;i<finalvar.length;i++){
+           
+           if(finalvar[i].index==indexfind&&indexfind!=-1){
+            finalvar[i].row=tableBody.getElementsByTagName('tr').length;
+             
+             finalvar[i].found=true; finalvar[i].unit.textarea=latexstr;}
+          if(finalvar[i].found===true){counter++;}
+         }
+         
+         
+
+        if(indexfind==-1){newRow.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';errors++;err.innerHTML="Numeri errori: "+errors;}
+        else{newRow.style.backgroundColor = 'rgba(0, 255, 0, 0.5)';
+          
+        let check='\\(';
+ let index=-1;let counter=0;
+for(let i=1;i<finalvar.length-1;i++){
+  //alert(finalvar[i].unit.textarea);
+ if(index!=finalvar[i].index&&finalvar[i].index!=-1){counter++; index=finalvar[i].index;}
+  if(!finalvar[i].found){check+=('?');}
+  else{
+  check+=finalvar[i].unit.textarea;}
+}check+=('\\)');
+   const problem=document.getElementById("problem");
+   problem.innerHTML=check;
+
+MathJax.typeset();  
+          
+        }
+          newRow.innerHTML = `<td><p>${name}</p></td><td><p>${uof}</p></td><td style="display: none;"> <textarea oninput="updateRowOutput(this,1)">${latexstr}</textarea></td>` ; 
+      
+      if(counter==finalvar.length){alert("Hai vinto!");
+        const lastformula=document.getElementById("formula");
+        const initialformula=document.getElementById("formula");
+
+       lastformula.style.display = "block";
+       lastformula.innerHTML=output.innerHTML;
+      }
+          
+        
+        }
+        
+function edit() {
+    const table = document.getElementById("data-table2");
+    const header = table.querySelector("thead th:nth-child(3)"); // Selects the 3rd <th> in thead
+    const cells = table.getElementsByTagName("td");
+    
+    // Toggle the header
+    if (header.style.display === "none") {
+        header.style.display = "block";
+    } else {
+        header.style.display = "none";
+    }
+    
+    // Toggle the third column cells
+    for (let i = 2; i < cells.length; i += 3) { // Start at index 2 (third column) and step by 3
+       
+            cells[i].style.display =header.style.display ;
+      
+    }
+}
+        
+         function updateOutput() { const textarea = document.getElementById('latex'); const output = document.getElementById('output'); output.innerHTML = `\\(${textarea.value}\\)`; 
+         MathJax.typeset(); }
+         
+         
+         
+         function updateRowOutput(textarea,int) { const row = textarea.closest('tr');
+         const outputCell = row.querySelector(`td:nth-child(${int}) p`);
+         outputCell.innerHTML = `\\(${textarea.value}\\)`; MathJax.typeset();
+         
+         
+         let thisrow=row.rowIndex;
+         for(let i=1;i<finalvar.length-1;i++){
+           if(finalvar[i].row==thisrow){finalvar[i].unit.textarea=textarea.value;}
+         }
+         
+            let check='\\(';
+ let index=-1;let counter=0;
+for(let i=1;i<finalvar.length-1;i++){
+  //alert(finalvar[i].unit.textarea);
+ if(index!=finalvar[i].index&&finalvar[i].index!=-1){counter++; index=finalvar[i].index;}
+  if(!finalvar[i].found){check+=('?');}
+  else{
+  check+=finalvar[i].unit.textarea;}
+}check+=('\\)');
+   const problem=document.getElementById("problem");
+   problem.innerHTML=check;
+
+MathJax.typeset();  
+           
+           
+           
+         }
+         
+          function updateValue(input){
+             
+            const name = document.getElementById('name');
+            const uof = document.getElementById('uof');
+         
+          const variabile = document.querySelector('input[placeholder="nome variabile"]').value;
+        
+            const lunghezza = document.getElementById('lunghezza').value;
+            const massa = document.getElementById('massa').value;
+           
+            const tempo = document.getElementById('tempo').value;
+            const corrente = document.getElementById('corrente').value;
+            const mole = document.getElementById('mole').value;
+            const temperatura = document.getElementById('temperatura').value;
+            const luminosita = document.getElementById('luminosita').value;
+  
+              
+// const uoff=
+
+let uoff = '';
+if (lunghezza && lunghezza != 0) { uoff += `L${lunghezza != 1 ? `^{${lunghezza}}` : ''} `; } if (massa && massa != 0) { uoff += `M${massa != 1 ? `^{${massa}}` : ''} `; } 
+         if (tempo && tempo != 0) { uoff += `S${tempo != 1 ? `^{${tempo}}` : ''} `; } if (corrente && corrente != 0) { uoff += `I${corrente != 1 ? `^{${corrente}}` : ''} `; } if (mole && mole != 0) { uoff += `mol${mole != 1 ? `^{${mole}}` : ''} `; } if (temperatura && temperatura != 0) { uoff += `T${temperatura != 1 ? `^{${temperatura}}` : ''} `; }
+         if (luminosita && luminosita != 0) { uoff += `cd${luminosita != 1 ? `^{${luminosita}}` : ''} `; }
+         uoff = uoff.trim(); 
+          uof.innerHTML = `\\(${uoff}\\)`;
+         name.innerHTML = `\\(${variabile}\\)`; 
+ MathJax.typeset();
+
+         }
+         
+         
+         function updateUnitMeasurement(input) { const row = input.closest('tr');
+         // I numeri si trovano nelle celle 3-9 (indice 2 a 8)
+         const lunghezza = row.cells[2].querySelector('input').value; const massa = row.cells[3].querySelector('input').value; const tempo = row.cells[4].querySelector('input').value;
+         const corrente = row.cells[5].querySelector('input').value; const mole = row.cells[6].querySelector('input').value; const temperatura = row.cells[7].querySelector('input').value; const luminosita = row.cells[8].querySelector('input').value; let unitString = '';
+         // Per ogni input, se il valore è non nullo e diverso da 0, aggiungiamo il simbolo
+         if (lunghezza && lunghezza != 0) { unitString += `L${lunghezza != 1 ? `^{${lunghezza}}` : ''} `; } if (massa && massa != 0) { unitString += `M${massa != 1 ? `^{${massa}}` : ''} `; } 
+         if (tempo && tempo != 0) { unitString += `S${tempo != 1 ? `^{${tempo}}` : ''} `; } if (corrente && corrente != 0) { unitString += `I${corrente != 1 ? `^{${corrente}}` : ''} `; } if (mole && mole != 0) { unitString += `n${mole != 1 ? `^{${mole}}` : ''} `; } if (temperatura && temperatura != 0) { unitString += `T${temperatura != 1 ? `^{${temperatura}}` : ''} `; }
+         if (luminosita && luminosita != 0) { unitString += `cd${luminosita != 1 ? `^{${luminosita}}` : ''} `; }
+         unitString = unitString.trim(); 
+         // Aggiorna il contenuto della cella "Unità di misura" (colonna 10) 
+         row.cells[9].querySelector('p').innerHTML = `\\(${unitString}\\)`; 
+         MathJax.typeset(); } 
+         // Aggiunge una nuova riga alla tabella con tutti gli eventi oninput
+         function addRow() { const tableBody = document.getElementById('data-table').getElementsByTagName('tbody')[0]; const newRow = tableBody.insertRow(); newRow.innerHTML = ` <td><textarea style="width: 100%; height: 20px;" oninput="updateRowOutput(this,2)"></textarea></td> <td><p></p></td> <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> <td><p></p></td> <td><button onclick="removeRow(this)">Rimuovi</button></td> `; } 
+         // Rimuove la riga in cui si trova il pulsante "Rimuovi"
+         function removeRow(button) { const row = button.closest('tr'); row.parentNode.removeChild(row); } 
+          
+          function findSubStringPosition(s, sottostringa) {
+    let posizioni = [];
+    let indice = s.indexOf(sottostringa);
+
+    while (indice !== -1) {
+        posizioni.push(indice);
+        indice = s.indexOf(sottostringa, indice + 1);
+    }
+
+    return posizioni;
+}
+          
+        function createGame(){ 
+          document.getElementById('body1').style.display = 'none'; 
+          document.getElementById('body2').style.display = 'block';
+          const text = document.getElementById('latex').value;
+          let latexfunc=['\\frac','\\sqrt','\\exp','\\sin','\\vec'];
+          
+        
+          
+          let latex=[];
+          
+        for(let i=0;i<latexfunc.length;i++){
+         let g= findSubStringPosition(text,latexfunc[i]);
+         for(let j=0;j<g.length;j++){
+           latex.push({positions: g[j], unit: {textarea: latexfunc[i]}, index: -1, found: true});
+
+         }
+        }
+        
+       
+
+        let myvar=[];
+        let contents = [];
+    
+    const rows = document.querySelectorAll('#data-table tbody tr');
+    rows.forEach(row => {
+        const textareaValue = row.querySelector('textarea').value;
+        const lunghezzaValue = row.cells[2].querySelector('input').value;
+        const massaValue = row.cells[3].querySelector('input').value;
+        const tempoValue = row.cells[4].querySelector('input').value;
+        const correnteValue = row.cells[5].querySelector('input').value;
+        const moleValue = row.cells[6].querySelector('input').value;
+        const temperaturaValue = row.cells[7].querySelector('input').value;
+        const luminositaValue = row.cells[8].querySelector('input').value;
+        contents.push({
+            textarea: textareaValue,
+            lunghezza: lunghezzaValue,
+            massa: massaValue,
+            tempo: tempoValue,
+            corrente: correnteValue,
+            mole: moleValue,
+            temperatura: temperaturaValue,
+            luminosita: luminositaValue
+        });
+    });
+    
+        contents.sort((a, b) => b.textarea.length - a.textarea.length);
+
+      
+     for(let i=0;i<contents.length;i++){
+      let g=[];
+      if(contents[i].textarea!==""){g= findSubStringPosition(text,contents[i].textarea);}
+        
+        
+for(let j=0;j<g.length;j++){
+  let push=true;
+ // 
+//alert(contents[i].textarea+": "+g[j]+">="+latex[k].positions+"&&");
+
+  for(let k=0;k<latex.length;k++){
+  if(g[j]>=latex[k].positions&&g[j]<latex[k].positions+latex[k].unit.textarea.length){push=false; }}
+  for(let k=0;k<myvar.length;k++){if(g[j]>=myvar[k].positions   &&g[j]<myvar[k].positions+myvar[k].unit.textarea.length){push=false;}}
+  
+  if(push){
+
+    myvar.push({positions: g[j], units: contents[i], row: -1,   unit: {textarea: contents[i].textarea}, index: i, found: false});
+  }
+ 
+}}///i due for
+
+  
+
+for(let i=0;i<latex.length;i++){finalvar.push(latex[i]);}
+for(let i=0;i<myvar.length;i++){finalvar.push(myvar[i]);}
+
+
+finalvar.push({positions: -1,unit: {textarea: ''}, index: -1, found: true});
+finalvar.sort((a,b)=>a.positions-b.positions);
+finalvar.push({positions: text.length,unit: {textarea: ''}, index: -1, found: true});
+finalvar[0].positions=0;
+const mylength=finalvar.length;
+for(let i=1;i<mylength;i++){
+  
+
+  if(finalvar[i].positions>finalvar[i-1].positions+finalvar[i-1].unit.textarea.length){
+ 
+    finalvar.push(
+      {positions: finalvar[i-1].positions+finalvar[i-1].unit.textarea.length,
+      unit: {textarea: text.substring(finalvar[i-1].positions+finalvar[i-1].unit.textarea.length, finalvar[i].positions) },
+      index: -1, found: true});
+  }
+  
+
+}
+
+
+
+finalvar.sort((a,b)=>a.positions-b.positions);
+
+
+let check='\\(';
+ let index=-1;let counter=0;
+for(let i=1;i<finalvar.length-1;i++){
+  //alert(finalvar[i].unit.textarea);
+ if(index!=finalvar[i].index&&finalvar[i].index!=-1){counter++; index=finalvar[i].index;}
+  if(!finalvar[i].found){check+=('?');}
+  else{
+  check+=finalvar[i].unit.textarea;}
+}check+=('\\)');
+   const problem=document.getElementById("problem");
+   problem.innerHTML=check;
+   
+  
+   const numerodivariabili=document.getElementById("numerodivariabili");
+   numerodivariabili.innerHTML="Il numero di variabili che devi indovinare sono: "+counter;
+MathJax.typeset();
+    
+        }
+       
+        
+        
+         </script> </body> </html> 
