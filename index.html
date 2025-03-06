@@ -39,13 +39,14 @@
    <textarea id="latex" style="width: 100%; height: 50px; font-size: 16px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; resize: none;" 
    placeholder="Scrivi qui il tuo testo..." oninput="updateOutput()"></textarea>
    <table id="data-table"> <thead> <tr> <th>Latex</th>
-   <th>Output</th> <th>Lunghezza</th> <th>Massa</th>
+   <th>Output</th><th>Indovinare esattamente</th> <th>Lunghezza</th> <th>Massa</th>
    <th>Tempo</th> <th>Corrente</th> <th>Mole</th> 
    <th>Temperatura</th> <th>Luminosità</th>
    <th>Unità di misura</th> <th>Azioni</th> </tr> </thead> <tbody>
       <tr><td> 
       <textarea style="width: 100%; height: 20px;" oninput="updateRowOutput(this,2)"></textarea> </td>
       <td> <p></p> </td> 
+      <td> <input type="checkbox" >  </td>
       <td><input type="number" oninput="updateUnitMeasurement(this)" /></td>
       <td><input type="number" oninput="updateUnitMeasurement(this)" /></td>
       <td><input type="number" oninput="updateUnitMeasurement(this)" /></td>
@@ -94,13 +95,16 @@
         let errors=0;
         let finalvar=[];
    function addRow2(){
-            const lunghezza = document.getElementById("lunghezza").value;
-            const massa = document.getElementById("massa").value;
-            const tempo = document.getElementById("tempo").value;
-            const corrente = document.getElementById("corrente").value;
-            const mole = document.getElementById("mole").value;
-            const temperatura = document.getElementById("temperatura").value;
-            const luminosita = document.getElementById("luminosita").value;  
+            let lunghezza = document.getElementById("lunghezza").value;
+            let massa = document.getElementById("massa").value;
+            let tempo = document.getElementById("tempo").value;
+            let corrente = document.getElementById("corrente").value;
+            let mole = document.getElementById("mole").value;
+            let temperatura = document.getElementById("temperatura").value;
+            let luminosita = document.getElementById("luminosita").value;  
+          
+          
+          
           
            const tableBody = document.getElementById('data-table2').getElementsByTagName('tbody')[0]; 
           const newRow = tableBody.insertRow();
@@ -111,19 +115,31 @@ const err=document.getElementById("err");
 
           
       let indexfind=-1;
-          for(let i=0;i<finalvar.length;i++){
+      
+     let finalvarbuggato = finalvar
+    .filter(item => item.units) // Rimuove oggetti senza units
+    .sort((a, b) => {
+        // Ordina per units.exact: true prima di false
+        return (a.units.exact === b.units.exact) ? 0 : (a.units.exact ? -1 : 1);
+    });
+      
+      
+          for(let i=0;i<finalvarbuggato.length;i++){
 
     
-            if(finalvar[i].found==false&&
-            lunghezza==finalvar[i].units.lunghezza&&
-            massa==finalvar[i].units.massa&&
-            tempo==finalvar[i].units.tempo&&
-            corrente==finalvar[i].units.corrente&&
-            mole==finalvar[i].units.mole&&
-            temperatura==finalvar[i].units.temperatura&&
-            luminosita==finalvar[i].units.luminosita){
-              indexfind=finalvar[i].index;
-              break;
+            if(finalvarbuggato[i].found==false&&
+            lunghezza==finalvarbuggato[i].units.lunghezza&&
+            massa==finalvarbuggato[i].units.massa&&
+            tempo==finalvarbuggato[i].units.tempo&&
+            corrente==finalvarbuggato[i].units.corrente&&
+            mole==finalvarbuggato[i].units.mole&&
+            temperatura==finalvarbuggato[i].units.temperatura&&
+            luminosita==finalvarbuggato[i].units.luminosita){
+              
+              if((finalvarbuggato[i].units.exact==true&&finalvarbuggato[i].unit.textarea==latexstr)||(finalvarbuggato[i].units.exact==false)){
+              indexfind=finalvarbuggato[i].index;
+              break;}
+            
             }
             
             
@@ -197,14 +213,15 @@ function edit() {
          
          
          
-         function updateRowOutput(textarea,int) { const row = textarea.closest('tr');
+         function updateRowOutput(textarea,int) { 
+          
+           const row = textarea.closest('tr');
          const outputCell = row.querySelector(`td:nth-child(${int}) p`);
-         outputCell.innerHTML = `\\(${textarea.value}\\)`; MathJax.typeset();
          
          
          let thisrow=row.rowIndex;
          for(let i=1;i<finalvar.length-1;i++){
-           if(finalvar[i].row==thisrow){finalvar[i].unit.textarea=textarea.value;}
+           if(finalvar[i].row==thisrow){finalvar[i].unit.textarea=textarea.value;if(finalvar[i].units.exact==true){alert("Non puoi cambiare: è costante");return;}}
          }
          
             let check='\\(';
@@ -218,6 +235,9 @@ for(let i=1;i<finalvar.length-1;i++){
 }check+=('\\)');
    const problem=document.getElementById("problem");
    problem.innerHTML=check;
+
+
+         outputCell.innerHTML = `\\(${textarea.value}\\)`; MathJax.typeset();
 
 MathJax.typeset();  
            
@@ -269,7 +289,7 @@ if (lunghezza && lunghezza != 0) { uoff += `L${lunghezza != 1 ? `^{${lunghezza}}
          row.cells[9].querySelector('p').innerHTML = `\\(${unitString}\\)`; 
          MathJax.typeset(); } 
          // Aggiunge una nuova riga alla tabella con tutti gli eventi oninput
-         function addRow() { const tableBody = document.getElementById('data-table').getElementsByTagName('tbody')[0]; const newRow = tableBody.insertRow(); newRow.innerHTML = ` <td><textarea style="width: 100%; height: 20px;" oninput="updateRowOutput(this,2)"></textarea></td> <td><p></p></td> <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> <td><p></p></td> <td><button onclick="removeRow(this)">Rimuovi</button></td> `; } 
+         function addRow() { const tableBody = document.getElementById('data-table').getElementsByTagName('tbody')[0]; const newRow = tableBody.insertRow(); newRow.innerHTML = ` <td><textarea style="width: 100%; height: 20px;" oninput="updateRowOutput(this,2)"></textarea></td> <td><p></p></td>  <td> <input type="checkbox" >  </td> <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> <td><input type="number" oninput="updateUnitMeasurement(this)" /></td> <td><p></p></td> <td><button onclick="removeRow(this)">Rimuovi</button></td> `; } 
          // Rimuove la riga in cui si trova il pulsante "Rimuovi"
          function removeRow(button) { const row = button.closest('tr'); row.parentNode.removeChild(row); } 
           
@@ -289,8 +309,63 @@ if (lunghezza && lunghezza != 0) { uoff += `L${lunghezza != 1 ? `^{${lunghezza}}
           document.getElementById('body1').style.display = 'none'; 
           document.getElementById('body2').style.display = 'block';
           const text = document.getElementById('latex').value;
-          let latexfunc=['\\frac','\\sqrt','\\exp','\\sin','\\vec'];
           
+          
+            let myvar=[];
+        let contents = [];
+    
+    const rows = document.querySelectorAll('#data-table tbody tr');
+    rows.forEach(row => {
+        const textareaValue = row.querySelector('textarea').value;
+        const exactValue = row.cells[2].querySelector('input').checked;
+        const lunghezzaValue = row.cells[3].querySelector('input').value;
+        const massaValue = row.cells[4].querySelector('input').value;
+        const tempoValue = row.cells[5].querySelector('input').value;
+        const correnteValue = row.cells[6].querySelector('input').value;
+        const moleValue = row.cells[7].querySelector('input').value;
+        const temperaturaValue = row.cells[8].querySelector('input').value;
+        const luminositaValue = row.cells[9].querySelector('input').value;
+        contents.push({
+          exact: exactValue,
+            textarea: textareaValue,
+            lunghezza: lunghezzaValue,
+            massa: massaValue,
+            tempo: tempoValue,
+            corrente: correnteValue,
+            mole: moleValue,
+            temperatura: temperaturaValue,
+            luminosita: luminositaValue
+        });
+    });
+    
+        contents.sort((a, b) => b.textarea.length - a.textarea.length);
+          
+          
+          
+          
+          
+          
+          latexfunc = [
+    '\\frac', '\\sqrt', '\\exp', '\\sin', '\\vec', '\\cos', '\\tan', '\\log', '\\ln', 
+    '\\lim', '\\sum', '\\prod', '\\int', '\\oint', '\\pm', '\\cdot', '\\times', '\\div', 
+    '\\infty', '\\alpha', '\\beta', '\\gamma', '\\delta', '\\theta', '\\forall', '\\exists', 
+    '\\nabla', '\\partial', '\\min', '\\max', '\\sup', '\\inf', '\\cup', '\\cap', 
+    '\\setminus', '\\subset', '\\subseteq', '\\supset', '\\supseteq', '\\parallel', 
+    '\\perp', '\\angle', '\\triangle', '\\equiv', '\\sim', '\\approx', '\\propto', 
+    '\\rightarrow', '\\leftarrow', '\\leftrightarrow', '\\Rightarrow', '\\Leftarrow', 
+    '\\Leftrightarrow', '\\hat', '\\ket', '\\bra', '\\braket', '\\langle', '\\rangle', 
+    '\\lceil', '\\rceil', '\\lfloor', '\\rfloor', '\\text', '\\mathrm', '\\mathbb', 
+    '\\mathcal', '\\mathfrak', '\\textbf', '\\textit', '\\texttt', '\\overline', 
+    '\\underline', '\\boldsymbol', '\\operatorname', '\\bigcup', '\\bigcap', 
+    '\\bigvee', '\\bigwedge', '\\bigodot', '\\bigoplus', '\\bigotimes','\\pi','\\hbar','\\wedge'
+];
+
+        for(let i=0;i<latexfunc.length;i++){
+          for(let j=0;j<contents.length;j++){
+            if(latexfunc[i]==contents[j].textarea){latexfunc[i]="";}
+          }
+        }
+latexfunc = latexfunc.filter(func => func !== "");
         
           
           let latex=[];
@@ -305,32 +380,7 @@ if (lunghezza && lunghezza != 0) { uoff += `L${lunghezza != 1 ? `^{${lunghezza}}
         
        
 
-        let myvar=[];
-        let contents = [];
-    
-    const rows = document.querySelectorAll('#data-table tbody tr');
-    rows.forEach(row => {
-        const textareaValue = row.querySelector('textarea').value;
-        const lunghezzaValue = row.cells[2].querySelector('input').value;
-        const massaValue = row.cells[3].querySelector('input').value;
-        const tempoValue = row.cells[4].querySelector('input').value;
-        const correnteValue = row.cells[5].querySelector('input').value;
-        const moleValue = row.cells[6].querySelector('input').value;
-        const temperaturaValue = row.cells[7].querySelector('input').value;
-        const luminositaValue = row.cells[8].querySelector('input').value;
-        contents.push({
-            textarea: textareaValue,
-            lunghezza: lunghezzaValue,
-            massa: massaValue,
-            tempo: tempoValue,
-            corrente: correnteValue,
-            mole: moleValue,
-            temperatura: temperaturaValue,
-            luminosita: luminositaValue
-        });
-    });
-    
-        contents.sort((a, b) => b.textarea.length - a.textarea.length);
+      
 
       
      for(let i=0;i<contents.length;i++){
@@ -387,7 +437,8 @@ finalvar.sort((a,b)=>a.positions-b.positions);
 let check='\\(';
  let index=-1;let counter=0;
 for(let i=1;i<finalvar.length-1;i++){
-  //alert(finalvar[i].unit.textarea);
+ 
+ 
  if(index!=finalvar[i].index&&finalvar[i].index!=-1){counter++; index=finalvar[i].index;}
   if(!finalvar[i].found){check+=('?');}
   else{
